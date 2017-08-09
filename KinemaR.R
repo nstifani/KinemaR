@@ -43,45 +43,45 @@ TransformButton.Function<- function(){ # Transform Button from the dialog
 
 # Selection Functions --------------------------------------------------------
 
-SelectCSVDataFileDir.Function <- function(){
-  MessageChooseDataDir="Choose the folder containing the Kinematic Data CSV Files."
+SelectTXTDataFileDir.Function <- function(){
+  MessageChooseDataDir="Choose the folder containing the Kinematic Data TXT Files."
   InputDirPath<-tk_choose.dir(default="", caption=MessageChooseDataDir) # Prompt the user to select an inputdirectory
   InputDirName<-basename(InputDirPath) # Defines Name of Input directory
-  ListInputFilePath<-list.files(path=InputDirPath, pattern=".csv", all.files=FALSE, full.names=TRUE, ignore.case = TRUE) # Get the list of CSV filepath within InputDir
+  ListInputFilePath<-list.files(path=InputDirPath, pattern=".txt", all.files=FALSE, full.names=TRUE, ignore.case = TRUE) # Get the list of TXT filepath within InputDir
  
   
   
-  while(length(ListInputFilePath)==0){ # Display a message if the folder does not contain any CSV file
-    MessageNoCSVFileError=paste0("Sorry but \"",InputDirName, "\"\ndoes not contain any CSV file.\n")
-    MessageNoCSVFileErrorFix=paste0("Please select a folder containing at least one CSV file.\n")
+  while(length(ListInputFilePath)==0){ # Display a message if the folder does not contain any TXT file
+    MessageNoTXTFileError=paste0("Sorry but \"",InputDirName, "\"\ndoes not contain any TXT file.\n")
+    MessageNoTXTFileErrorFix=paste0("Please select a folder containing at least one TXT file.\n")
     MessageRetryCancel=paste0("\nClick Retry to Try Again\n or \nCancel to Abort.")
-    UserChoice<-tk_messageBox(type = "retrycancel", message=paste0(MessageNoCSVFileError,"\n", MessageNoCSVFileErrorFix, "\n", MessageRetryCancel), caption = "KinemaR Information", icon="question")
+    UserChoice<-tk_messageBox(type = "retrycancel", message=paste0(MessageNoTXTFileError,"\n", MessageNoTXTFileErrorFix, "\n", MessageRetryCancel), caption = "KinemaR Information", icon="question")
     if(UserChoice=="cancel"){
       MessageStop<-"Sorry, KinemaR has stopped.\n"
-      stop(paste0(MessageStop,"\n", MessageNoCSVFileError, "\n",MessageNoCSVFileErrorFix))
+      stop(paste0(MessageStop,"\n", MessageNoTXTFileError, "\n",MessageNoTXTFileErrorFix))
     } else if (UserChoice=="retry") {
       rm(list=c("InputDirPath","InputDirName", "ListInputFilePath"))
       InputDirPath<-tk_choose.dir(default="", caption=MessageChooseDataDir) 
       InputDirName<-basename(InputDirPath) 
-      ListInputFilePath<-list.files(path=InputDirPath, pattern=".CSV", all.files=FALSE, full.names=TRUE, ignore.case = TRUE) # Get the list of CSV filepath within InputDir
+      ListInputFilePath<-list.files(path=InputDirPath, pattern=".TXT", all.files=FALSE, full.names=TRUE, ignore.case = TRUE) # Get the list of TXT filepath within InputDir
     }
-  } # Display a message if the folder does not contain any CSV file
+  } # Display a message if the folder does not contain any TXT file
   
   for (FileI in 1:length(ListInputFilePath)){
     InputFilePathI <- ListInputFilePath[FileI] # Defines the Path of the File to be processed
     InputFilenameI <- basename(InputFilePathI) # Get the Filename of the File being processed
-    InputFilenameINoExt <- gsub(".csv","", InputFilenameI,ignore.case = TRUE) # Create a filename without extension
+    InputFilenameINoExt <- gsub(".txt","", InputFilenameI,ignore.case = TRUE) # Create a filename without extension
     
     if(length(unlist(strsplit(InputFilenameINoExt, "_")))<2){
-      MessageFilenameError<-paste0("Sorry, ",InputFilenameI, "\ndoes not match KinemaR CSV file name specification.")
-      MessageFilenameErrorFix<-paste0("Please, ensure that the name of CSV files include at least 1 underscore (Example: \"Date_Subject.csv\").")
+      MessageFilenameError<-paste0("Sorry, ",InputFilenameI, "\ndoes not match KinemaR TXT file name specification.")
+      MessageFilenameErrorFix<-paste0("Please, ensure that the name of TXT files include at least 1 underscore (Example: \"Date_Subject.txt\").")
       tk_messageBox(type = "ok", message=paste0(MessageFilenameError,"\n",MessageFilenameErrorFix), caption = "KinemaR Information", icon="warning")
       MessageStop<-"Sorry, KinemaR has stopped.\n"
       stop(paste0(MessageStop,"\n", MessageFilenameError,"\n", MessageFilenameErrorFix))
     } # Check that Filenames have at least 1 underscore
     
     # Read the data to check data Integrity
-    InputDataI <- read.table(InputFilePathI, sep = ",", fill = TRUE, header = TRUE,comment.char = "", nrows = 100000)
+    InputDataI <- read.table(InputFilePathI, sep = "\t", fill = TRUE, header = TRUE,comment.char = "", nrows = 100000)
     InputDataI <- InputDataI[,-seq(4,dim(InputDataI)[2],3)] # remove flag columns
     InputDataI <- InputDataI[-1,] # remove empty first row
     
@@ -92,7 +92,7 @@ SelectCSVDataFileDir.Function <- function(){
       MessageStop<-"Sorry, KinemaR has stopped.\n"
       stop(paste0(MessageStop,"\n", MessageMissingValueError, "\n", MessageMissingValueFileErrorFix))
     } # If data has missing values then notify the user and stop KinemaR
-  } # Check each CSV file
+  } # Check each TXT file
   
   assign("ListInputFilePath", ListInputFilePath, envir = .GlobalEnv) # Assign the Variable to the global environment
   assign("InputDirPath", InputDirPath, envir = .GlobalEnv) # Assign the Variable to the global environment
@@ -104,25 +104,25 @@ SelectCSVDataFileDir.Function <- function(){
   
 } # Select input directory
 
-SelectVideoCalibCSV.Function <- function(){
+SelectVideoCalibTXT.Function <- function(){
   while(!exists("ListInputFilePath")){
-    MessageMissingInputDataError<-"Sorry, the input directory must be defined before the Video Calibration Values CSV file."
-    MessageMissingInputDataErrorFix<-"Do you want to choose the folder containing the Kinematic CSV data files now?"
+    MessageMissingInputDataError<-"Sorry, the input directory must be defined before the Video Calibration Values TXT file."
+    MessageMissingInputDataErrorFix<-"Do you want to choose the folder containing the Kinematic TXT data files now?"
     MessageRetryCancel=paste0("\nClick Yes to select it now\n or \nCancel to Abort.")
     UserChoice<-tk_messageBox(type="yesno", message=paste0(MessageMissingInputDataError, "\n", MessageMissingInputDataErrorFix, "\n", MessageRetryCancel), caption="KinemaR Information", icon="warning" )
     if(UserChoice=="yes"){
-      SelectCSVDataFileDir.Function()
+      SelectTXTDataFileDir.Function()
     } else if (UserChoice=="no") {
       MessageStop<-"Sorry, KinemaR has stopped.\n"
       stop(paste0(MessageStop,"\n", MessageMissingInputDataError, "\n", MessageMissingInputDataErrorFix))
     }
   } # Ensure the Input directory is select prior to select the Calibration File
   
-  CSVFilter<-matrix(c("CSV File",".CSV","CSV File",".csv"),2,2,byrow=TRUE) # Create a filter to select only CSV files
-  MessageChooseCalibCSVFile="Choose the CSV file containing Video Calibration Values."
-  VideoCalibrationFilePath <- tk_choose.files(default="Video Calibration Values.CSV", caption=MessageChooseCalibCSVFile, multi=FALSE, filters=CSVFilter)
+  TXTFilter<-matrix(c("TXT File",".TXT","TXT File",".txt"),2,2,byrow=TRUE) # Create a filter to select only TXT files
+  MessageChooseCalibTXTFile="Choose the TXT file containing Video Calibration Values."
+  VideoCalibrationFilePath <- tk_choose.files(default="Video Calibration Values.TXT", caption=MessageChooseCalibTXTFile, multi=FALSE, filters=TXTFilter)
   VideoCalibrationFilename<-basename(VideoCalibrationFilePath)
-  VideoCalibrationData <- read.table(VideoCalibrationFilePath, sep = ",", fill = TRUE, header = TRUE,comment.char = "", nrows=1000,check.names = FALSE)
+  VideoCalibrationData <- read.table(VideoCalibrationFilePath, sep = "\t", fill = TRUE, header = TRUE,comment.char = "", nrows=1000,check.names = FALSE)
   
   
   while((any(colnames(VideoCalibrationData)=="Filename") # Ensure Video Calibration File has the correct header
@@ -137,7 +137,7 @@ SelectVideoCalibCSV.Function <- function(){
     UserChoice<-tk_messageBox(type = "retrycancel", message=paste0(MessageCalibrationHeaderError,"\n",MessageCalibrationHeaderErrorFix,"\n", MessageRetryCancel), caption = "KinemaR Information", icon="warning")
     if (UserChoice=="retry") {
       rm(list=c("VideoCalibrationFilePath","VideoCalibrationFilename", "VideoCalibrationData"))
-      SelectVideoCalibCSV.Function()
+      SelectVideoCalibTXT.Function()
     } else if(UserChoice=="cancel"){
       MessageStop<-"Sorry, KinemaR has stopped.\n"
       stop(paste0(MessageStop,"\n", MessageCalibrationHeaderError, "\n", MessageCalibrationHeaderErrorFix))
@@ -145,32 +145,32 @@ SelectVideoCalibCSV.Function <- function(){
   } # Ensure Video Calibration File has the correct header
   
   if(anyNA(VideoCalibrationData)){
-    MessageCalibCSVFileMissingValueError<-paste0("Sorry, ", VideoCalibrationFilename, "\nhas missing values.")
-    MessageCalibCSVFileMissingValueErrorFix<-paste0("Please check ", VideoCalibrationFilename, " for missing values.")
-    tk_messageBox(type = "ok", message=paste0(MessageCalibCSVFileMissingValueError,"\n", MessageCalibCSVFileMissingValueErrorFix), caption = "KinemaR Information", icon="warning")
+    MessageCalibTXTFileMissingValueError<-paste0("Sorry, ", VideoCalibrationFilename, "\nhas missing values.")
+    MessageCalibTXTFileMissingValueErrorFix<-paste0("Please check ", VideoCalibrationFilename, " for missing values.")
+    tk_messageBox(type = "ok", message=paste0(MessageCalibTXTFileMissingValueError,"\n", MessageCalibTXTFileMissingValueErrorFix), caption = "KinemaR Information", icon="warning")
     MessageStop<-"Sorry, KinemaR has stopped.\n"
-    stop(paste0(MessageStop,"\n", MessageCalibCSVFileMissingValueError, "\n", MessageCalibCSVFileMissingValueErrorFix))
+    stop(paste0(MessageStop,"\n", MessageCalibTXTFileMissingValueError, "\n", MessageCalibTXTFileMissingValueErrorFix))
   } # Make sure Calibration file as no missing values
   
-  # Create a VideoCalibrationID within the CSV video Calibration file
+  # Create a VideoCalibrationID within the TXT video Calibration file
   for (RowI in 1:length(VideoCalibrationData$Filename)){
     DateI<- unlist(strsplit(as.character(VideoCalibrationData$Filename[RowI]), "_"))[1] # Get the name before the 1st underscore
     SubjectI <- unlist(strsplit(as.character(VideoCalibrationData$Filename[RowI]), "_"))[2]
     VideoCalibrationData$VideoCalibrationID[RowI]<-paste0(DateI,"_", SubjectI)
-  }  # Create a VideoCalibrationID within the CSV video Calibration file
+  }  # Create a VideoCalibrationID within the TXT video Calibration file
   
   # Make sure all Input File have a Video Calibration Data
   for (FileI in 1:length(ListInputFilePath)){
     InputFilePathI <- ListInputFilePath[FileI] # Get the Path of the Data file
     InputFilenameI <- basename(InputFilePathI) # Get the name of the data file
-    InputFilenameINoExt <- gsub(".csv","", InputFilenameI,ignore.case = TRUE) # remove the csv extension from the name
+    InputFilenameINoExt <- gsub(".txt","", InputFilenameI,ignore.case = TRUE) # remove the csv extension from the name
     DateI <- unlist(strsplit(InputFilenameINoExt, "_"))[1] # Get the name before the 1st underscore
     SubjectI <- unlist(strsplit(InputFilenameINoExt, "_"))[2] # Get the name after the 1st underscore and before the 2nd if more than 1
-    VideoCalibrationID <- paste0(DateI,"_",SubjectI) # Create a Calibration ID from the Name of the CSV data file
+    VideoCalibrationID <- paste0(DateI,"_",SubjectI) # Create a Calibration ID from the Name of the TXT data file
     
     if(any(as.character(VideoCalibrationData$VideoCalibrationID)==VideoCalibrationID)!=TRUE){
-      MessageMissingCalibError=paste0("Sorry, the CSV Data File ", InputFilenameI, " have no calibration.")
-      MessageMissingCalibErrorFix=paste0("Please make sure ", VideoCalibrationID," is defined in the Video Calibration CSV file.")
+      MessageMissingCalibError=paste0("Sorry, the TXT Data File ", InputFilenameI, " have no calibration.")
+      MessageMissingCalibErrorFix=paste0("Please make sure ", VideoCalibrationID," is defined in the Video Calibration TXT file.")
       tk_messageBox(type="ok", message=paste0(MessageMissingCalibError, "\n", MessageMissingCalibErrorFix), caption="KinemaR Information", icon="warning" )
       MessageStop<-"Sorry, KinemaR has stopped.\n"
       stop(paste0(MessageStop,"\n", MessageMissingCalibError, "\n", MessageMissingCalibErrorFix))
@@ -179,7 +179,7 @@ SelectVideoCalibCSV.Function <- function(){
     VideoCalibrationValuesI <- VideoCalibrationData[VideoCalibrationData$VideoCalibrationID == VideoCalibrationID,] # Get the Calibration Values for the FileI
     if(dim(VideoCalibrationValuesI)[1]!=1){
       MessageAmbiguousCalibrationError=paste0("Sorry, Video Calibration Values for ", InputFilenameI, " are ambiguous.")
-      MessageAmbiguousCalibrationErrorFix=paste0("Please make sure ", VideoCalibrationID," is unique within the Video Calibration CSV file.")
+      MessageAmbiguousCalibrationErrorFix=paste0("Please make sure ", VideoCalibrationID," is unique within the Video Calibration TXT file.")
       tk_messageBox(type="ok", message=paste0(MessageAmbiguousCalibrationError, "\n", MessageAmbiguousCalibrationErrorFix), caption="KinemaR Information", icon="warning" )
       MessageStop<-"Sorry, KinemaR has stopped.\n"
       stop(paste0(MessageStop,"\n", MessageAmbiguousCalibrationError, "\n", MessageAmbiguousCalibrationErrorFix))
@@ -200,39 +200,39 @@ SelectVideoCalibCSV.Function <- function(){
   assign("VideoCalibrationData", VideoCalibrationData, envir = .GlobalEnv)
   assign("VideoCalibrationFilePath", VideoCalibrationFilePath, envir = .GlobalEnv)
   tclvalue(SelectedCalibFilenameVar)<-paste0(basename(VideoCalibrationFilePath))
-} # Select the Video Calibration CSV File
+} # Select the Video Calibration TXT File
 
-SelectSubjectBodyCSV.Function <- function(){
+SelectSubjectBodyTXT.Function <- function(){
   while(!exists("ListInputFilePath")){
-    MessageMissingInputDataError<-"Sorry, the input directory must be defined before the Subject Body Values CSV file."
-    MessageMissingInputDataErrorFix<-"Do you want to choose the folder containing the Kinematic CSV data files now?"
+    MessageMissingInputDataError<-"Sorry, the input directory must be defined before the Subject Body Values TXT file."
+    MessageMissingInputDataErrorFix<-"Do you want to choose the folder containing the Kinematic TXT data files now?"
     MessageRetryCancel=paste0("\nClick Yes to select it now\n or \nCancel to Abort.")
     UserChoice<-tk_messageBox(type="yesno", message=paste0(MessageMissingInputDataError, "\n", MessageMissingInputDataErrorFix, "\n", MessageRetryCancel), caption="KinemaR Information", icon="warning" )
     if(UserChoice=="yes"){
-      SelectCSVDataFileDir.Function()
+      SelectTXTDataFileDir.Function()
     } else if (UserChoice=="no") {
       MessageStop<-"Sorry, KinemaR has stopped.\n"
       stop(paste0(MessageStop,"\n", MessageMissingInputDataError, "\n", MessageMissingInputDataErrorFix))
     }
   } # Ensure the Input directory is selected prior to select the Subject Body File
   while(!exists("VideoCalibrationData")){
-    MessageMissingCalibrationDataError<-"Sorry, the Video Calibration CSV File must be defined before the Subject Body Values CSV file."
-    MessageMissingCalibrationDataErrorFix<-"Do you want to choose the Video Calibration CSV File now?"
+    MessageMissingCalibrationDataError<-"Sorry, the Video Calibration TXT File must be defined before the Subject Body Values TXT file."
+    MessageMissingCalibrationDataErrorFix<-"Do you want to choose the Video Calibration TXT File now?"
     MessageRetryCancel=paste0("\nClick Yes to select it now\n or \nCancel to Abort.")
     UserChoice<-tk_messageBox(type="yesno", message=paste0(MessageMissingCalibrationDataError, "\n", MessageMissingCalibrationDataErrorFix, "\n", MessageRetryCancel), caption="KinemaR Information", icon="warning" )
     if(UserChoice=="yes"){
-      SelectVideoCalibCSV.Function()
+      SelectVideoCalibTXT.Function()
     } else if (UserChoice=="no") {
       MessageStop<-"Sorry, KinemaR has stopped.\n"
       stop(paste0(MessageStop,"\n", MessageMissingCalibrationDataError, "\n", MessageMissingCalibrationDataErrorFix))
     }
   } # Ensure the Video Calibration File is selected prior to select the Subject Body File
   
-  CSVFilter<-matrix(c("CSV File",".CSV","CSV File",".csv"),2,2,byrow=TRUE) # Create a filter to select only CSV files
-    MessageChooseSubjectCSVFile="Choose the CSV file containing Subject Body Values."
-  SubjectBodyFilePath <- tk_choose.files(default="Subject Body Values.CSV", caption=MessageChooseSubjectCSVFile, multi=FALSE, filters=CSVFilter)
+  TXTFilter<-matrix(c("TXT File",".TXT","TXT File",".txt"),2,2,byrow=TRUE) # Create a filter to select only TXT files
+    MessageChooseSubjectTXTFile="Choose the TXT file containing Subject Body Values."
+  SubjectBodyFilePath <- tk_choose.files(default="Subject Body Values.TXT", caption=MessageChooseSubjectTXTFile, multi=FALSE, filters=TXTFilter)
   SubjectBodyFilename<-basename(SubjectBodyFilePath)
-  SubjectBodyData <- read.table(SubjectBodyFilePath, sep = ",", fill = TRUE, header = TRUE,comment.char = "", nrows=1000, check.names = FALSE)
+  SubjectBodyData <- read.table(SubjectBodyFilePath, sep = "\t", fill = TRUE, header = TRUE,comment.char = "", nrows=1000, check.names = FALSE)
 
   
   while((any(colnames(SubjectBodyData)=="Subject") # Ensure Subject Body File has the correct header
@@ -244,7 +244,7 @@ SelectSubjectBodyCSV.Function <- function(){
     UserChoice<-tk_messageBox(type = "retrycancel", message=paste0(MessageSubjectHeaderError,"\n",MessageSubjectHeaderErrorFix,"\n", MessageRetryCancel), caption = "KinemaR Information", icon="warning")
     if (UserChoice=="retry") {
       rm(list=c("SubjectBodyFilePath","SubjectBodyFilename", "SubjectBodyData"))
-      SelectSubjectBodyCSV.Function()
+      SelectSubjectBodyTXT.Function()
     } else if(UserChoice=="cancel"){
       MessageStop<-"Sorry, KinemaR has stopped.\n"
       stop(paste0(MessageStop,"\n", MessageSubjectHeaderError, "\n", MessageSubjectHeaderErrorFix))
@@ -252,14 +252,14 @@ SelectSubjectBodyCSV.Function <- function(){
   } # Ensure SubjectBody File has the correct header
   
   if(anyNA(SubjectBodyData)){
-    MessageSubjectCSVFileMissingValueError<-paste0("Sorry, ", SubjectBodyFilename, "\nhas missing values.")
-    MessageSubjectCSVFileMissingValueErrorFix<-paste0("Please check ", SubjectBodyFilename, " for missing values.")
-    tk_messageBox(type = "ok", message=paste0(MessageSubjectCSVFileMissingValueError,"\n", MessageSubjectCSVFileMissingValueErrorFix), caption = "KinemaR Information", icon="warning")
+    MessageSubjectTXTFileMissingValueError<-paste0("Sorry, ", SubjectBodyFilename, "\nhas missing values.")
+    MessageSubjectTXTFileMissingValueErrorFix<-paste0("Please check ", SubjectBodyFilename, " for missing values.")
+    tk_messageBox(type = "ok", message=paste0(MessageSubjectTXTFileMissingValueError,"\n", MessageSubjectTXTFileMissingValueErrorFix), caption = "KinemaR Information", icon="warning")
     MessageStop<-"Sorry, KinemaR has stopped.\n"
-    stop(paste0(MessageStop,"\n", MessageSubjectCSVFileMissingValueError, "\n", MessageSubjectCSVFileMissingValueErrorFix))
+    stop(paste0(MessageStop,"\n", MessageSubjectTXTFileMissingValueError, "\n", MessageSubjectTXTFileMissingValueErrorFix))
   } # Make sure Subject file as no missing values
   
-  # Create a SubjectID within the CSV video Calibration file
+  # Create a SubjectID within the TXT video Calibration file
   for (RowI in 1:length(SubjectBodyData$Subject)){
     if(length(strsplit(as.character(SubjectBodyData$Subject[RowI]), "_"))>1){
       DateI<- unlist(strsplit(as.character(SubjectBodyData$Subject[RowI]), "_"))[1] # Get the name before the 1st underscore
@@ -268,21 +268,21 @@ SelectSubjectBodyCSV.Function <- function(){
     } else {
       SubjectBodyData$SubjectID[RowI]<-as.character(SubjectBodyData$Subject[RowI])
     }
-  }  # Create a SubjectID within the CSV video Calibration file
+  }  # Create a SubjectID within the TXT video Calibration file
   
   # Make sure all Input File have a Video Calibration Data
   for (FileI in 1:length(ListInputFilePath)){
     InputFilePathI <- ListInputFilePath[FileI] # Get the Path of the Data file
     InputFilenameI <- basename(InputFilePathI) # Get the name of the data file
-    InputFilenameINoExt <- gsub(".csv","", InputFilenameI,ignore.case = TRUE) # remove the csv extension from the name
+    InputFilenameINoExt <- gsub(".txt","", InputFilenameI,ignore.case = TRUE) # remove the csv extension from the name
     DateI <- unlist(strsplit(InputFilenameINoExt, "_"))[1] # Get the name before the 1st underscore
     SubjectI <- unlist(strsplit(InputFilenameINoExt, "_"))[2] # Get the name after the 1st underscore and before the 2nd if more than 1
-    VideoCalibrationID <- paste0(DateI,"_",SubjectI) # Create a Calibration ID from the Name of the CSV data file
-    SubjectID <- paste0(SubjectI) # Create a Subject ID from the Name of the CSV data file
+    VideoCalibrationID <- paste0(DateI,"_",SubjectI) # Create a Calibration ID from the Name of the TXT data file
+    SubjectID <- paste0(SubjectI) # Create a Subject ID from the Name of the TXT data file
     # SubjectID <- paste0(DateI,"_",SubjectI) # Altneratively you can use the Date and Subject as an ID
     if(any(as.character(SubjectBodyData$SubjectID)==SubjectID)!=TRUE){
-      MessageMissingSubjectError=paste0("Sorry, the CSV Data File ", InputFilenameI, " have no Subject Body Values")
-      MessageMissingSubjectErrorFix=paste0("Please make sure the subject ", SubjectID," is defined in the Subject Body Values CSV file.")
+      MessageMissingSubjectError=paste0("Sorry, the TXT Data File ", InputFilenameI, " have no Subject Body Values")
+      MessageMissingSubjectErrorFix=paste0("Please make sure the subject ", SubjectID," is defined in the Subject Body Values TXT file.")
       tk_messageBox(type="ok", message=paste0(MessageMissingSubjectError, "\n", MessageMissingSubjectErrorFix), caption="KinemaR Information", icon="warning" )
       MessageStop<-"Sorry, KinemaR has stopped.\n"
       stop(paste0(MessageStop,"\n", MessageMissingCalibError, "\n", MessageMissingCalibErrorFix))
@@ -290,7 +290,7 @@ SelectSubjectBodyCSV.Function <- function(){
     SubjectBodyValuesI <- SubjectBodyData[SubjectBodyData$SubjectID == SubjectI,]
     if(dim(SubjectBodyValuesI)[1]!=1){
       MessageAmbiguousSubjectError=paste0("Sorry, Subject Body Values for ", InputFilenameI, " are ambiguous.")
-      MessageAmbiguousSubjectErrorFix=paste0("Please make sure ", SubjectID," is unique within the Subject Body CSV file.")
+      MessageAmbiguousSubjectErrorFix=paste0("Please make sure ", SubjectID," is unique within the Subject Body TXT file.")
       tk_messageBox(type="ok", message=paste0(MessageAmbiguousSubjectError, "\n", MessageAmbiguousSubjectErrorFix), caption="KinemaR Information", icon="warning" )
       MessageStop<-"Sorry, KinemaR has stopped.\n"
       stop(paste0(MessageStop,"\n", MessageAmbiguousSubjectError, "\n", MessageAmbiguousSubjectErrorFix))
@@ -307,7 +307,7 @@ SelectSubjectBodyCSV.Function <- function(){
       stop(paste0(MessageStop,"\n", MessageFemurTibiaError, "\n", MessageFemurTibiaErrorFix))
     } # Make Sure Tibia and Femur are defined
     
-    InputDataI <- read.table(InputFilePathI, header = TRUE, sep = ",", fill = TRUE, colClasses = c("character"), comment.char = "", nrows=100000)  # Read the file
+    InputDataI <- read.table(InputFilePathI, header = TRUE, sep = "\t", fill = TRUE, colClasses = c("character"), comment.char = "", nrows=100000)  # Read the file
     # PreProcess the InputData
     InputDataI <- InputDataI[,c(-4,-7,-10,-13,-16,-17,-18,-19)]    # Delete the Flag columns
     InputDataI <- InputDataI[-1,]    # Delete the first row (always present and empty when generated from KinemaJ)
@@ -349,21 +349,21 @@ SelectSubjectBodyCSV.Function <- function(){
   assign("SubjectBodyData", SubjectBodyData, envir = .GlobalEnv)
   assign("SubjectBodyFilePath", SubjectBodyFilePath, envir = .GlobalEnv)
   tclvalue(SelectedBodyFilenameVar)<-paste0(basename(SubjectBodyFilePath))
-} # Select the Subject Body Values CSV File
+} # Select the Subject Body Values TXT File
 
 # Transform Data from KinemaJ ----
 TransformData.Function <- function() {
   while(!exists("ListInputFilePath") || length(ListInputFilePath)==0){
-    SelectCSVDataFileDir.Function()
-  }   # Requires InputDirectory with at least 1 CSV file
+    SelectTXTDataFileDir.Function()
+  }   # Requires InputDirectory with at least 1 TXT file
   while(!exists("VideoCalibrationData")){
-    SelectVideoCalibCSV.Function()
-  }   # Requires Video Calibration CSV File
+    SelectVideoCalibTXT.Function()
+  }   # Requires Video Calibration TXT File
   while(!exists("SubjectBodyData")){
-    SelectSubjectBodyCSV.Function()
-  }   # Requires Subject Body CSV file
+    SelectSubjectBodyTXT.Function()
+  }   # Requires Subject Body TXT file
   
-  for (FileI in 1:length(ListInputFilePath)){ # Process each CSV file
+  for (FileI in 1:length(ListInputFilePath)){ # Process each TXT file
     ################### Progress bar
     assign(paste0("TimeFile",FileI),Sys.time())  
     if (FileI==1){
@@ -396,9 +396,9 @@ TransformData.Function <- function() {
     } # Create an output folder
     
     InputFilePathI <- ListInputFilePath[FileI] # Defines the Path of the File to be processed
-    InputDataI <- read.table(InputFilePathI, header = TRUE, sep = ",", fill = TRUE, colClasses = c("character"), comment.char = "", nrows=100000)  # Read the file
+    InputDataI <- read.table(InputFilePathI, header = TRUE, sep = "\t", fill = TRUE, colClasses = c("character"), comment.char = "", nrows=100000)  # Read the file
     InputFilenameI      <- basename(InputFilePathI)  # Get the Filename of the File being processed
-    InputFilenameINoExt <- gsub(".csv","", InputFilenameI,ignore.case = TRUE)     # Create a filename without extension
+    InputFilenameINoExt <- gsub(".txt","", InputFilenameI,ignore.case = TRUE)     # Create a filename without extension
     if (length(unlist(strsplit(InputFilenameINoExt, "_")))>2){
       for (SubNameI in 3:length(unlist(strsplit(InputFilenameINoExt, "_")))){
         assign(paste0("Var", SubNameI), unlist(strsplit(InputFilenameINoExt, "_"))[SubNameI])        # Create an object with the String from the filename
@@ -501,8 +501,8 @@ TransformData.Function <- function() {
     
     # Make sure the the All knee coordinates are  otherwise stop KinemaR and inform the user
     if(anyNA(Knee.X) || anyNA(Knee.Y)){
-      tk_messageBox(type = "ok", message=paste0("Knee coordinates for ", InputFilenameI, " could not be computed. Please check the Subject Body Value CSV File for ", SubjectID, " or the CSV Data File ", InputFilenameI), caption = "KinemaR Information", icon="warning")
-      stop(paste0("KinemaR has stopped because the Knee coordinates for ", InputFilenameI, " could not be computed. Please check the Subject Body Value CSV File for ", SubjectID, " or the CSV Data File ", InputFilenameI))
+      tk_messageBox(type = "ok", message=paste0("Knee coordinates for ", InputFilenameI, " could not be computed. Please check the Subject Body Value TXT File for ", SubjectID, " or the TXT Data File ", InputFilenameI), caption = "KinemaR Information", icon="warning")
+      stop(paste0("KinemaR has stopped because the Knee coordinates for ", InputFilenameI, " could not be computed. Please check the Subject Body Value TXT File for ", SubjectID, " or the TXT Data File ", InputFilenameI))
     } # End if condtion
     
     ############### Add the values to the OutputData Table
@@ -621,10 +621,10 @@ TransformData.Function <- function() {
     OutputDataI$Angle.Ankle<-Angle.Function("Ankle","Paw", "Ankle","Knee")
     OutputDataI$Angle.Paw<-Angle.Function("Ankle","Paw","Paw","Toe")
     
-    OutputFilenameI <- paste0(InputFilenameINoExt,".csv")       
+    OutputFilenameI <- paste0(InputFilenameINoExt,".txt")       
     OutputFilePathI <- file.path(OutputDirPathTables, OutputFilenameI) # Create the output file Path
     
-    write.table(OutputDataI, file = OutputFilePathI, row.names =FALSE, sep = ",")     # Write the table
+    write.table(OutputDataI, file = OutputFilePathI, row.names =FALSE, sep = "\t")     # Write the table
     
     # Create a table for the first file to merge all the data into a single table. It will be saved for the last file
     if (FileI == 1){
@@ -645,10 +645,10 @@ TransformData.Function <- function() {
     } # End Add data to merged File
   } # end for File I  
   
-  OutputDataName <- paste0("Merged_Data_Transformed.csv")
+  OutputDataName <- paste0("Merged_Data_Transformed.txt")
   OutputDataPath <- file.path(OutputDirPath, OutputDataName)
-  write.table(OutputData, file = OutputDataPath, row.names =FALSE, sep = ",") # Save the Merged table
-  tk_messageBox(type = "ok", message=paste0("CSV Files in the folder ", InputDirName," have been transformed and merged. Files are located in ", OutputDirPath), caption = "KinemaR Information", icon="info")
+  write.table(OutputData, file = OutputDataPath, row.names =FALSE, sep = "\t") # Save the Merged table
+  tk_messageBox(type = "ok", message=paste0("TXT Files in the folder ", InputDirName," have been transformed and merged. Files are located in ", OutputDirPath), caption = "KinemaR Information", icon="info")
   close(KinemaRProgressBar)
 } # end function Transform
  
@@ -656,12 +656,12 @@ TransformData.Function <- function() {
 # Detect Phases ---------------------------------------------------------
 DetectPhases.Function<-function(){
   
-  CSVFilter<-matrix(c("CSV File",".CSV","CSV File",".csv"),2,2,byrow=TRUE) # Create a filter to select only CSV files
-    MessageChooseInputCSVFile="Choose the CSV file containing Merged AND Transformed Data"
-  InputFilePath <- tk_choose.files(default="Merged_Data_Transformed.CSV", caption=MessageChooseInputCSVFile, multi=FALSE, filters=CSVFilter)
+  TXTFilter<-matrix(c("TXT File",".TXT","TXT File",".txt"),2,2,byrow=TRUE) # Create a filter to select only TXT files
+    MessageChooseInputTXTFile="Choose the TXT file containing Merged AND Transformed Data"
+  InputFilePath <- tk_choose.files(default="Merged_Data_Transformed.TXT", caption=MessageChooseInputTXTFile, multi=FALSE, filters=TXTFilter)
   InputFilename<-basename(InputFilePath)
-  while(grepl(".*_Transformed.CSV", InputFilePath, ignore.case = TRUE)!=TRUE){
-    MessageInputFileError<-paste0("Sorry, ",InputFilename," is not a transformed data CSV file.")
+  while(grepl(".*_Transformed.TXT", InputFilePath, ignore.case = TRUE)!=TRUE){
+    MessageInputFileError<-paste0("Sorry, ",InputFilename," is not a transformed data TXT file.")
     MessageInputFileErrorFix<-paste0("Please select the Merged File created by KinemaR function 1")
     MessageRetryCancel=paste0("\nClick Retry to Try Again\n or \nCancel to Abort.")
     UserChoice<-tk_messageBox(type = "retrycancel", message=paste0(MessageInputFileError,"\n",MessageInputFileErrorFix,"\n", MessageRetryCancel), caption = "KinemaR Information", icon="warning")
@@ -670,12 +670,12 @@ DetectPhases.Function<-function(){
       stop(paste0(MessageStop,"\n", MessageInputFileError, "\n", MessageInputFileErrorFix))
     }else if (UserChoice=="retry") {
       rm(list=c("InputFilePath","InputFilename"))
-      InputFilePath <- tk_choose.files(default="Merged_Data_Transformed.CSV", caption=MessageChooseInputCSVFile, multi=FALSE, filters=CSVFilter)
+      InputFilePath <- tk_choose.files(default="Merged_Data_Transformed.TXT", caption=MessageChooseInputTXTFile, multi=FALSE, filters=TXTFilter)
       InputFilename<-basename(InputFilePath)
     }
-  } # Make sure the select Input File is a Transformed.csv
+  } # Make sure the select Input File is a Transformed.txt
   
-  InputDataHeader <- read.table(InputFilePath, sep = ",",fill = TRUE, header = TRUE, nrows = 3,comment.char = "") # Read the first row of the InputFile To check the header
+  InputDataHeader <- read.table(InputFilePath, sep = "\t",fill = TRUE, header = TRUE, nrows = 3,comment.char = "") # Read the first row of the InputFile To check the header
   
   while((any(colnames(InputDataHeader)=="Filename") # Ensure File has the correct header
          && any(colnames(InputDataHeader)=="Toe.X")
@@ -696,7 +696,7 @@ DetectPhases.Function<-function(){
   
   KinemaRProgressBar <- tkProgressBar(title="KinemaR Phase Detection", label="KinemaR Phase Detection", min=0, max=100, initial=0, width=300)
   setTkProgressBar(KinemaRProgressBar, 50, title="KinemaR Phase Detection", label=paste0("Reading Input File. Please be patient."))
-  InputData <- read.table(InputFilePath, sep = ",",fill = TRUE, header = TRUE,comment.char = "", nrows=1000000)
+  InputData <- read.table(InputFilePath, sep = "\t",fill = TRUE, header = TRUE,comment.char = "", nrows=1000000)
   setTkProgressBar(KinemaRProgressBar, 100, title="KinemaR Phase Detection", label=paste0("Reading Input File completed."))
   Sys.sleep(1)
   InputDirPath <- dirname(InputFilePath)
@@ -790,8 +790,8 @@ DetectPhases.Function<-function(){
     legend("topright", c("Swing", "Stance","ToeX", "ToeY"), text.col=c("blue", "red", BBlue, PPink), inset = .05, bty="n") # Add legend
     dev.off() # Close and save the graph
     
-    OutputFilePathI<-file.path(OutputDirPathTables, paste0(FilenameI,".csv")) # Create the OutputFilePath for the file being processed
-    write.table(DataI, file = OutputFilePathI, row.names =FALSE, sep = ",")    # Save the data file
+    OutputFilePathI<-file.path(OutputDirPathTables, paste0(FilenameI,".txt")) # Create the OutputFilePath for the file being processed
+    write.table(DataI, file = OutputFilePathI, row.names =FALSE, sep = "\t")    # Save the data file
     
     if(FileI==1){
       OutputData<-DataI     # Create a Merged Output
@@ -799,9 +799,9 @@ DetectPhases.Function<-function(){
       OutputData<-rbind(OutputData, DataI) 
     }# Bind the data to the Merged Output
   } # Process each Filename within the Input File
-  OutputFilePath<-file.path(OutputDirPath, paste0("Merged_Data_Phase_Detected.CSV"))  # Write the Merged Table table
-  write.table(OutputData, file = OutputFilePath, row.names =FALSE, sep = ",")  # Write the Merged Table table
-  tk_messageBox(type = "ok", message=paste0("Phases have been detected succesfully for ",InputFilename,". CSV File are located in ", OutputDirPath), caption = "KinemaR Information", icon="info")
+  OutputFilePath<-file.path(OutputDirPath, paste0("Merged_Data_Phase_Detected.TXT"))  # Write the Merged Table table
+  write.table(OutputData, file = OutputFilePath, row.names =FALSE, sep = "\t")  # Write the Merged Table table
+  tk_messageBox(type = "ok", message=paste0("Phases have been detected succesfully for ",InputFilename,". TXT File are located in ", OutputDirPath), caption = "KinemaR Information", icon="info")
   close(KinemaRProgressBar)
   
 } # End of Detect Phases function
@@ -809,12 +809,12 @@ DetectPhases.Function<-function(){
 # Normalize within file ------------------------------------------------
 # This function normalize every detected phase to the average phase duration using cubic spline interpolation
 NormalizeWithinFile.Function <- function(){
-  CSVFilter<-matrix(c("CSV File",".CSV","CSV File",".csv"),2,2,byrow=TRUE) # Create a filter to select only CSV files
-  MessageChooseInputCSVFile="Choose the CSV file containing Merged Phase_detected Data"
-  InputFilePath <- tk_choose.files(default="Merged_Data_Phase_Detected.CSV", caption=MessageChooseInputCSVFile, multi=FALSE, filters=CSVFilter)
+  TXTFilter<-matrix(c("TXT File",".TXT","TXT File",".txt"),2,2,byrow=TRUE) # Create a filter to select only TXT files
+  MessageChooseInputTXTFile="Choose the TXT file containing Merged Phase_detected Data"
+  InputFilePath <- tk_choose.files(default="Merged_Data_Phase_Detected.TXT", caption=MessageChooseInputTXTFile, multi=FALSE, filters=TXTFilter)
   InputFilename<-basename(InputFilePath)
-  while(grepl(".*_Phase_Detected.CSV", InputFilePath, ignore.case=TRUE)!=TRUE){
-    MessageInputFileError<-paste0("Sorry, ",InputFilename," is not a Phase_detected data CSV file.")
+  while(grepl(".*_Phase_Detected.TXT", InputFilePath, ignore.case=TRUE)!=TRUE){
+    MessageInputFileError<-paste0("Sorry, ",InputFilename," is not a Phase_detected data TXT file.")
     MessageInputFileErrorFix<-paste0("Please select the Merged File created by KinemaR function 2")
     MessageRetryCancel=paste0("\nClick Retry to Try Again\n or \nCancel to Abort.")
     UserChoice<-tk_messageBox(type = "retrycancel", message=paste0(MessageInputFileError,"\n",MessageInputFileErrorFix,"\n", MessageRetryCancel), caption = "KinemaR Information", icon="warning")
@@ -823,12 +823,12 @@ NormalizeWithinFile.Function <- function(){
       stop(paste0(MessageStop,"\n", MessageInputFileError, "\n", MessageInputFileErrorFix))
     }else if (UserChoice=="retry") {
       rm(list=c("InputFilePath","InputFilename"))
-      InputFilePath <- tk_choose.files(default="Merged_Data_Phase_Detected.CSV", caption=MessageChooseInputCSVFile, multi=FALSE, filters=CSVFilter)
+      InputFilePath <- tk_choose.files(default="Merged_Data_Phase_Detected.TXT", caption=MessageChooseInputTXTFile, multi=FALSE, filters=TXTFilter)
       InputFilename<-basename(InputFilePath)
     }
-  } # Make sure the select Input File is a Phase Detected.csv
+  } # Make sure the select Input File is a Phase Detected.txt
   
-  InputDataHeader <- read.table(InputFilePath, sep = ",",fill = TRUE, header = TRUE, nrows = 3,comment.char = "") # Read the first row of the InputFile To check the header
+  InputDataHeader <- read.table(InputFilePath, sep = "\t",fill = TRUE, header = TRUE, nrows = 3,comment.char = "") # Read the first row of the InputFile To check the header
   
   while((any(colnames(InputDataHeader)=="Filename") # Ensure File has the correct header
          && any(colnames(InputDataHeader)=="Frame")
@@ -852,7 +852,7 @@ NormalizeWithinFile.Function <- function(){
   
   KinemaRProgressBar <- tkProgressBar(title="KinemaR Normalization", label="KinemaR Normalization", min=0, max=100, initial=0, width=300)
   setTkProgressBar(KinemaRProgressBar, 50, title="KinemaR Normalization", label=paste0("Reading Input File. Please be patient."))
-  InputData <- read.table(InputFilePath, sep = ",",fill = TRUE, header = TRUE,comment.char = "", nrows=1000000)
+  InputData <- read.table(InputFilePath, sep = "\t",fill = TRUE, header = TRUE,comment.char = "", nrows=1000000)
   setTkProgressBar(KinemaRProgressBar, 100, title="KinemaR Normalization", label=paste0("Reading Input File completed."))
   Sys.sleep(1)
   InputDirPath <- dirname(InputFilePath)
@@ -927,9 +927,9 @@ NormalizeWithinFile.Function <- function(){
         OutputDataI<-rbind(OutputDataI, OutputDataIPhaseI) # If PhaseUIDI is higher than 1 bind the rows to the MergedNormalize data
       }       # OutputDataI is the Data for each processed File
     } # End of for PhaseID loop
-    OutputFilenameI <- paste0(FilenameI,".csv")   # Save the FileI table
+    OutputFilenameI <- paste0(FilenameI,".txt")   # Save the FileI table
     OutputFilePathI <- file.path(OutputDirPathTables, OutputFilenameI)   # Save the FileI table
-    write.table(OutputDataI, file = OutputFilePathI, row.names =FALSE, sep = ",")   # Save the FileI table
+    write.table(OutputDataI, file = OutputFilePathI, row.names =FALSE, sep = "\t")   # Save the FileI table
     if (FileI==1){
       OutputData <- OutputDataI      # Create the merge Data Table
     } else if(FileI>1){
@@ -937,22 +937,22 @@ NormalizeWithinFile.Function <- function(){
     } # Create Merged File
   } # Process each file within the InputData$Filename
   
-  OutputFilename <- paste0("Merged_Data_Normalized_Within.CSV")  # Create the Output file Path
+  OutputFilename <- paste0("Merged_Data_Normalized_Within.TXT")  # Create the Output file Path
   OutputFilePath <- file.path(OutputDirPath, OutputFilename)  # Create the Output file Path
-  write.table(OutputData, file = OutputFilePath, row.names =FALSE, sep = ",") # Write the Merged File
-  tk_messageBox(type = "ok", message=paste0(InputFilename," has been normalized successfully. Normalized CSV Files are located in ", OutputFilePath), caption = "KinemaR Information", icon="info")
+  write.table(OutputData, file = OutputFilePath, row.names =FALSE, sep = "\t") # Write the Merged File
+  tk_messageBox(type = "ok", message=paste0(InputFilename," has been normalized successfully. Normalized TXT Files are located in ", OutputFilePath), caption = "KinemaR Information", icon="info")
   close(KinemaRProgressBar)
 } # End of Normalize withing file function
 
 # Normalize Across file ------------------------------------------------
 # This function normalize every detected phase to the 100 data points using cubic spline interpolation
 NormalizeAcrossFile.Function <- function(){
-  CSVFilter<-matrix(c("CSV File",".CSV","CSV File",".csv"),2,2,byrow=TRUE) # Create a filter to select only CSV files
-  MessageChooseInputCSVFile="Choose the CSV file containing Merged Phase_detected Data"
-  InputFilePath <- tk_choose.files(default="Merged_Data_Phase_Detected.CSV", caption=MessageChooseInputCSVFile, multi=FALSE, filters=CSVFilter)
+  TXTFilter<-matrix(c("TXT File",".TXT","TXT File",".txt"),2,2,byrow=TRUE) # Create a filter to select only TXT files
+  MessageChooseInputTXTFile="Choose the TXT file containing Merged Phase_detected Data"
+  InputFilePath <- tk_choose.files(default="Merged_Data_Phase_Detected.TXT", caption=MessageChooseInputTXTFile, multi=FALSE, filters=TXTFilter)
   InputFilename<-basename(InputFilePath)
-  while(grepl(".*_Phase_Detected.CSV", InputFilePath, ignore.case=TRUE)!=TRUE){
-    MessageInputFileError<-paste0("Sorry, ",InputFilename," is not a Phase_detected data CSV file.")
+  while(grepl(".*_Phase_Detected.TXT", InputFilePath, ignore.case=TRUE)!=TRUE){
+    MessageInputFileError<-paste0("Sorry, ",InputFilename," is not a Phase_detected data TXT file.")
     MessageInputFileErrorFix<-paste0("Please select the Merged File created by KinemaR function 2")
     MessageRetryCancel=paste0("\nClick Retry to Try Again\n or \nCancel to Abort.")
     UserChoice<-tk_messageBox(type = "retrycancel", message=paste0(MessageInputFileError,"\n",MessageInputFileErrorFix,"\n", MessageRetryCancel), caption = "KinemaR Information", icon="warning")
@@ -961,12 +961,12 @@ NormalizeAcrossFile.Function <- function(){
       stop(paste0(MessageStop,"\n", MessageInputFileError, "\n", MessageInputFileErrorFix))
     }else if (UserChoice=="retry") {
       rm(list=c("InputFilePath","InputFilename"))
-      InputFilePath <- tk_choose.files(default="Merged & Detected DATA.CSV", caption=MessageChooseInputCSVFile, multi=FALSE, filters=CSVFilter)
+      InputFilePath <- tk_choose.files(default="Merged & Detected DATA.TXT", caption=MessageChooseInputTXTFile, multi=FALSE, filters=TXTFilter)
       InputFilename<-basename(InputFilePath)
     }
-  } # Make sure the select Input File is a Phase Detected.csv
+  } # Make sure the select Input File is a Phase Detected.txt
   
-  InputDataHeader <- read.table(InputFilePath, sep = ",",fill = TRUE, header = TRUE, nrows = 3,comment.char = "") # Read the first row of the InputFile To check the header
+  InputDataHeader <- read.table(InputFilePath, sep = "\t",fill = TRUE, header = TRUE, nrows = 3,comment.char = "") # Read the first row of the InputFile To check the header
   
   while((any(colnames(InputDataHeader)=="Filename") # Ensure File has the correct header
          && any(colnames(InputDataHeader)=="Frame")
@@ -990,7 +990,7 @@ NormalizeAcrossFile.Function <- function(){
   
   KinemaRProgressBar <- tkProgressBar(title="KinemaR Normalization", label="KinemaR Normalization", min=0, max=100, initial=0, width=300)
   setTkProgressBar(KinemaRProgressBar, 50, title="KinemaR Normalization", label=paste0("Reading Input File. Please be patient."))
-  InputData <- read.table(InputFilePath, sep = ",",fill = TRUE, header = TRUE,comment.char = "", nrows=1000000)
+  InputData <- read.table(InputFilePath, sep = "\t",fill = TRUE, header = TRUE,comment.char = "", nrows=1000000)
   setTkProgressBar(KinemaRProgressBar, 100, title="KinemaR Normalization", label=paste0("Reading Input File completed."))
   Sys.sleep(1)
   InputDirPath <- dirname(InputFilePath)
@@ -1060,9 +1060,9 @@ NormalizeAcrossFile.Function <- function(){
         OutputDataI<-rbind(OutputDataI, OutputDataIPhaseI) # If PhaseUIDI is higher than 1 bind the rows to the MergedNormalize data
       }       # OutputDataI is the Data for each processed File
         } # End of for PhaseID loop
-    OutputFilenameI <- paste0(FilenameI,".csv")   # Save the FileI table
+    OutputFilenameI <- paste0(FilenameI,".txt")   # Save the FileI table
     OutputFilePathI <- file.path(OutputDirPathTables, OutputFilenameI)   # Save the FileI table
-    write.table(OutputDataI, file = OutputFilePathI, row.names =FALSE, sep = ",")   # Save the FileI table
+    write.table(OutputDataI, file = OutputFilePathI, row.names =FALSE, sep = "\t")   # Save the FileI table
     if (FileI==1){
       OutputData <- OutputDataI      # Create the merge Data Table
     } else if(FileI>1){
@@ -1070,22 +1070,22 @@ NormalizeAcrossFile.Function <- function(){
     } # Create Merged File
   } # Process each file Across the InputData$Filename
   
-  OutputFilename <- paste0("Merged_Data_Normalized_Across.CSV")  # Create the Output file Path
+  OutputFilename <- paste0("Merged_Data_Normalized_Across.TXT")  # Create the Output file Path
   OutputFilePath <- file.path(OutputDirPath, OutputFilename)  # Create the Output file Path
-  write.table(OutputData, file = OutputFilePath, row.names =FALSE, sep = ",") # Write the Merged File
-  tk_messageBox(type = "ok", message=paste0(InputFilename," has been normalized successfully. Normalized CSV Files are located in ", OutputFilePath), caption = "KinemaR Information", icon="info")
+  write.table(OutputData, file = OutputFilePath, row.names =FALSE, sep = "\t") # Write the Merged File
+  tk_messageBox(type = "ok", message=paste0(InputFilename," has been normalized successfully. Normalized TXT Files are located in ", OutputFilePath), caption = "KinemaR Information", icon="info")
   close(KinemaRProgressBar)
 } # End of Normalize across file function
 
 # Average data  ---------------------------------------------------
 # This function Summarize the interpolated data around selected variables using the aggregate function
 AverageData.Function <- function(){
-  CSVFilter<-matrix(c("CSV File",".CSV","CSV File",".csv"),2,2,byrow=TRUE) # Create a filter to select only CSV files
-  MessageChooseInputCSVFile="Choose the CSV file containing Merged Normalized Data"
-  InputFilePath <- tk_choose.files(default="Merged_Data_Normalized.CSV", caption=MessageChooseInputCSVFile, multi=FALSE, filters=CSVFilter)
+  TXTFilter<-matrix(c("TXT File",".TXT","TXT File",".txt"),2,2,byrow=TRUE) # Create a filter to select only TXT files
+  MessageChooseInputTXTFile="Choose the TXT file containing Merged Normalized Data"
+  InputFilePath <- tk_choose.files(default="Merged_Data_Normalized.TXT", caption=MessageChooseInputTXTFile, multi=FALSE, filters=TXTFilter)
   InputFilename<-basename(InputFilePath)
-  while(grepl(".*_Normalized.*.CSV", InputFilePath, ignore.case=TRUE)!=TRUE){
-    MessageInputFileError<-paste0("Sorry, ",InputFilename," is not a Normalized data CSV file.")
+  while(grepl(".*_Normalized.*.TXT", InputFilePath, ignore.case=TRUE)!=TRUE){
+    MessageInputFileError<-paste0("Sorry, ",InputFilename," is not a Normalized data TXT file.")
     MessageInputFileErrorFix<-paste0("Please select the Merged File created by KinemaR function 3")
     MessageRetryCancel=paste0("\nClick Retry to Try Again\n or \nCancel to Abort.")
     UserChoice<-tk_messageBox(type = "retrycancel", message=paste0(MessageInputFileError,"\n",MessageInputFileErrorFix,"\n", MessageRetryCancel), caption = "KinemaR Information", icon="warning")
@@ -1094,12 +1094,12 @@ AverageData.Function <- function(){
       stop(paste0(MessageStop,"\n", MessageInputFileError, "\n", MessageInputFileErrorFix))
     }else if (UserChoice=="retry") {
       rm(list=c("InputFilePath","InputFilename"))
-      InputFilePath <- tk_choose.files(default="Merged_Data_Normalized.CSV", caption=MessageChooseInputCSVFile, multi=FALSE, filters=CSVFilter)
+      InputFilePath <- tk_choose.files(default="Merged_Data_Normalized.TXT", caption=MessageChooseInputTXTFile, multi=FALSE, filters=TXTFilter)
       InputFilename<-basename(InputFilePath)
     }
-  } # Make sure the select Input File is a Phase Detected.csv
+  } # Make sure the select Input File is a Phase Detected.txt
   
-  InputDataHeader <- read.table(InputFilePath, sep = ",",fill = TRUE, header = TRUE, nrows = 3,comment.char = "") # Read the first row of the InputFile To check the header
+  InputDataHeader <- read.table(InputFilePath, sep = "\t",fill = TRUE, header = TRUE, nrows = 3,comment.char = "") # Read the first row of the InputFile To check the header
   
   while((any(colnames(InputDataHeader)=="Filename") # Ensure File has the correct header
          && any(colnames(InputDataHeader)=="Frame")
@@ -1120,7 +1120,7 @@ AverageData.Function <- function(){
   
   KinemaRProgressBar <- tkProgressBar(title="KinemaR Averaging", label="KinemaR Averaging", min=0, max=100, initial=0, width=300)
   setTkProgressBar(KinemaRProgressBar, 50, title="KinemaR Averaging", label=paste0("Reading Input File. Please be patient."))
-  InputData <- read.table(InputFilePath, sep = ",",fill = TRUE, header = TRUE,comment.char = "", nrows=1000000)
+  InputData <- read.table(InputFilePath, sep = "\t",fill = TRUE, header = TRUE,comment.char = "", nrows=1000000)
   setTkProgressBar(KinemaRProgressBar, 100, title="KinemaR Averaging", label=paste0("Reading Input File completed."))
   Sys.sleep(1)
   InputDirPath <- dirname(InputFilePath)
@@ -1215,7 +1215,7 @@ AverageData.Function <- function(){
     
     # Recreates the Filename Variables
     DimDataI<-dim(OutputDataI)[1]
-    FilenameINoExt<-gsub(".csv","",FilenameI,ignore.case = TRUE)
+    FilenameINoExt<-gsub(".txt","",FilenameI,ignore.case = TRUE)
     DateI<-unlist(strsplit(FilenameINoExt, "_"))[1]
     SubjectI<-unlist(strsplit(FilenameINoExt, "_"))[2]
     if (length(unlist(strsplit(FilenameINoExt, "_")))>2){
@@ -1230,9 +1230,9 @@ AverageData.Function <- function(){
         OutputDataI[[paste0("Var", SubNameI)]]  <- as.character(rep(get(paste0("Var",SubNameI)), DimDataI))
       }# Add the Variable from the filename to the outputdata table
     }     # If there is more than 2 variables in the filename add it as a variable in the OutputData
-    OutputFilenameI <- paste0(FilenameI,".csv") # Save the FileI table
+    OutputFilenameI <- paste0(FilenameI,".txt") # Save the FileI table
     OutputFilePathI <- file.path(OutputDirPathTables, OutputFilenameI)# Save the FileI table
-    write.table(OutputDataI, file = OutputFilePathI, row.names =FALSE, sep = ",") # Save the FileI table
+    write.table(OutputDataI, file = OutputFilePathI, row.names =FALSE, sep = "\t") # Save the FileI table
     
     # Create a table for the first file to merge all the data into a single table. It will be saved for the last file
     if (FileI == 1){
@@ -1252,10 +1252,10 @@ AverageData.Function <- function(){
       OutputData     <- rbind(OutputData, OutputDataI)
     } # End Add data to merged File
   } # end for File I  
-      OutputFilename <- paste0("Merged_Data_Averaged.CSV")   # Create the output file Path
+      OutputFilename <- paste0("Merged_Data_Averaged.TXT")   # Create the output file Path
   OutputFilePath <- file.path(OutputDirPath, OutputFilename)
-  write.table(OutputData, file = OutputFilePath, row.names =FALSE, sep = ",")# Write the Merged data and inform of a message
-  tk_messageBox(type = "ok", message=paste0(InputFilename," has been averaged successfully. Averaged CSV Files are located in ", OutputDirPath), caption = "KinemaR Information", icon="info")
+  write.table(OutputData, file = OutputFilePath, row.names =FALSE, sep = "\t")# Write the Merged data and inform of a message
+  tk_messageBox(type = "ok", message=paste0(InputFilename," has been averaged successfully. Averaged TXT Files are located in ", OutputDirPath), caption = "KinemaR Information", icon="info")
   close(KinemaRProgressBar)
   
 } # End of Average function
@@ -1275,19 +1275,19 @@ TransformDialog.Function<-function(){
   SelectDataFolderLabel<-ttklabel(TransformDialog, text="Data Folder :",  font=LabelFont)
   assign("SelectedDataNameVar",tclVar("1 Select Data Folder --->"), envir=.GlobalEnv)
   SelectedDataName<-ttklabel(TransformDialog, textvariable=SelectedDataNameVar, font=NameFont, background="#e6e6e6")
-  SelectData.Button<-ttkbutton(TransformDialog,text="Select Folder", command=SelectCSVDataFileDir.Function)
+  SelectData.Button<-ttkbutton(TransformDialog,text="Select Folder", command=SelectTXTDataFileDir.Function)
   tkgrid(SelectDataFolderLabel, SelectedDataName, SelectData.Button, padx=3, pady=2)
   tkgrid.configure(SelectDataFolderLabel, sticky = "e")
   SelectCalibFileLabel<-ttklabel(TransformDialog, text="Video Calibration File :",  font=LabelFont)
   assign("SelectedCalibFilenameVar",tclVar("2 Select Video Calibration File --->"), envir=.GlobalEnv)
   SelectedCalibFilename<-ttklabel(TransformDialog, textvariable=SelectedCalibFilenameVar, font=NameFont, background="#e6e6e6")
-  SelectCalib.Button<-ttkbutton(TransformDialog,text="Select Calibration CSV File", command=SelectVideoCalibCSV.Function)
+  SelectCalib.Button<-ttkbutton(TransformDialog,text="Select Calibration TXT File", command=SelectVideoCalibTXT.Function)
   tkgrid(SelectCalibFileLabel,SelectedCalibFilename,SelectCalib.Button, padx=3, pady=2)
   tkgrid.configure(SelectCalibFileLabel, sticky = "e")
   SelectBodyFileLabel<-ttklabel(TransformDialog, text="Subject Body File :",  font=LabelFont)
   assign("SelectedBodyFilenameVar",tclVar("3 Select Subject Body File --->"), envir=.GlobalEnv)
   SelectedBodyFilename<-ttklabel(TransformDialog, textvariable=SelectedBodyFilenameVar, font=NameFont, background="#e6e6e6")
-  SelectBody.Button<-ttkbutton(TransformDialog,text="Select Subject Body CSV File", command=SelectSubjectBodyCSV.Function)
+  SelectBody.Button<-ttkbutton(TransformDialog,text="Select Subject Body TXT File", command=SelectSubjectBodyTXT.Function)
   tkgrid(SelectBodyFileLabel,SelectedBodyFilename,SelectBody.Button, padx=3, pady=2)
   tkgrid.configure(SelectBodyFileLabel, sticky = "e")
   tkgrid(ttklabel(TransformDialog,text=" "))  # Insert a blank line

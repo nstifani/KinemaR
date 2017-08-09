@@ -1,0 +1,2 @@
+Filename	Width (pixel)	Height (pixel)	Width (cm)	Height (cm)
+2015-01-31_Mouse87_RightSide_10cps_Control_00000_Calibration	347	174	7	4
